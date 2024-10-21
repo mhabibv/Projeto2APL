@@ -1,13 +1,15 @@
+include: person.2apl;
+
 beliefupdates:
   { bomb(X,Y) }          RemoveBomb(X,Y)  { not bomb(X,Y) }
   { true }               AddBomb(X,Y)     { bomb(X,Y) }
   { carry(bomb) }        Drop()           { not carry(bomb) }
   { not carry(bomb) }    PickUp()         { carry(bomb) }
-  { true }               AddToStorage(X,Y) { storedBombs(Bombs), storedBombs([[X,Y] | Bombs]) }
+  { storedBombs(Bombs) }  AddToStorage(X,Y)  { storedBombs([[X,Y] | Bombs]) }
 
 beliefs:
   start(0,1).
-  storedBombs([]).  // Vetor que armazena as bombas
+  storedBombs([]).  
   clean(blockWorld) :- not bomb(X,Y), not carry(bomb).
 
 plans:
@@ -27,10 +29,20 @@ pgrules:
     goto(0, 0);
     @blockworld(drop(), _);
     Drop();
+    AddToStorage(X, Y); 
+  
+  }
 
-    @blockworld(sensePosition(), POS);
-    B(POS = [Px, Py]);
-
-    @blockworld(removeBomb(Px, Py), _);
-    RemoveBomb(Px, Py);
+pcrules:
+  message(sally, inform, La, On, bombAt(X, Y)) <- true |
+  {
+    if B(not bomb(A, B)) then
+    {
+      AddBomb(X, Y);
+      adoptz(clean(blockWorld));
+    }
+    else
+    {
+      AddBomb(X, Y);
+    }
   }
