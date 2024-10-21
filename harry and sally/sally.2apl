@@ -1,30 +1,20 @@
 include: person.2apl;
 
-beliefupdates:
-  { bomb(X,Y) }         RemoveBomb(X,Y) { not bomb(X,Y) }
-  { carry( bomb ) }     Drop( )         { not carry( bomb ) }
-  { not carry( bomb ) } PickUp( )       { carry( bomb ) }
-
-beliefs:
-  start(0,0).
-
 goals:
-  retrieveBombs( ).
+  search( blockWorld ).
+
+plans:
+  @blockworld( enter( 8, 8, red ), _ );
 
 pgrules:
-  retrieveBombs() <- bomb( X, Y ) |
+  search( blockWorld ) <- true |
   {
+    B(is( X, int( random( 15 ) ) ));
+    B(is( Y, int( random( 15 ) ) ));
     goto( X, Y );
-    @blockworld( pickup( ), _ );
-    PickUp( );
-    goto( 0, 0 );
-    @blockworld( drop( ), _ );
-    Drop( );
-  }
-
-pcrules:
-  message( harry, inform, La, On, bombAt( X, Y ) ) <- true |
-  {
-    AddBomb( X, Y );
-    adoptz( retrieveBombs() );
+    @blockworld( senseBombs(), BOMBS );
+    if B( BOMBS = [[default,X1,Y1]|REST] ) then
+    { 
+      send( harry, inform, bombAt( X1, Y1 ) );
+    }
   }
